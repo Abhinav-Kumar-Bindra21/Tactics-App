@@ -6,6 +6,7 @@ const Hero = () => {
       id="home"
       className="grid items-center gap-10 px-5 py-12 sm:py-16 md:grid-cols-2 md:gap-12 md:px-10 md:py-16"
     >
+      {/* Left column: Hero content */}
       <div>
         <p className="text-xs font-bold tracking-[0.25em] text-lime-300">THINK. CALCULATE. WIN.</p>
 
@@ -34,7 +35,10 @@ const Hero = () => {
         </div>
       </div>
 
-      <ChessboardPreview />
+      {/* Right column: Existing chessboard preview */}
+      <div className="mx-auto w-full min-w-0 max-w-[460px]">
+        <ChessboardPreview />
+      </div>
     </section>
   );
 };

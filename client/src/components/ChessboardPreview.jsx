@@ -31,7 +31,7 @@ function ChessboardPreview() {
         <span className="rounded-full border border-white/10 px-3 py-2 text-xs text-gray-300">PUZZLE #001</span>
       </div>
 
-      <div className="mx-auto w-full max-w-[520px]">
+      <div className="mx-auto w-full max-w-[460px]">
         <Chessboard options={boardOptions} />
       </div>
 
