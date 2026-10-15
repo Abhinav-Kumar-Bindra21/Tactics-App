@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { validateUser } from "../utils/validateUser.js";
 import { createCsrfToken } from "../utils/csrf.js";
 import { accessCookieOptions, csrfCookieOptions } from "../utils/authCookies.js";
+import path from "node:path";
 
 // Register a new student
 export const registerStudent = async (req, res) => {
@@ -181,3 +182,45 @@ export function getCsrfToken(req, res) {
     });
   }
 }
+
+export const getCurrentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("_id name email role isActive");
+
+    if (!user || !user.isActive) {
+      res.clearCookie("accessToken");
+      return res.status(401).json({ success: false, message: "Authentication required." });
+    }
+
+    return res
+      .status(200)
+      .json({ success: true, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+  } catch (error) {
+    console.error("Get current user failed:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to retrieve your account.",
+    });
+  }
+};
+
+export const logoutStudent = (req, res) => {
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+  });
+
+  res.clearCookie("csrfToken", {
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+  });
+};
