@@ -11,6 +11,9 @@ import puzzles from "./data/puzzles";
 import { Route, Routes } from "react-router-dom";
 import StudentDashboard from "./components/student/StudentDashboard";
 import AuthPage from "./components/AuthPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import CoachDashboard from "./components/coach/CoachDashboard";
+import AdminDashboard from "./components/admin/AdminDashboard";
 
 function HomePage() {
   const [selectedTheme, setSelectedTheme] = useState("All");
@@ -160,8 +163,19 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
-      <Route path="login" element={<AuthPage />} />
-      <Route path="/student/dashboard" element={<StudentDashboard />} />
+      <Route path="/login" element={<AuthPage />} />
+
+      <Route element={<ProtectedRoute allowedRoles={["student"]} />}>
+        <Route path="/student/dashboard" element={<StudentDashboard />} />
+      </Route>
+
+      <Route element={<ProtectedRoute allowedRoles={["coach"]} />}>
+        <Route path="/coach/dashboard" element={<CoachDashboard />} />
+      </Route>
+
+      <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+      </Route>
     </Routes>
   );
 }

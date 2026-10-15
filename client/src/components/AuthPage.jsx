@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../api/axios";
+import { useAuth } from "../context/authContext";
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
 
   const [mode, setMode] = useState("login");
   const [name, setName] = useState("");
@@ -41,6 +43,8 @@ function AuthPage() {
         email,
         password,
       });
+
+      await refreshUser();
 
       toast.success("Login successful! Welcome to Tactic Lab.");
 
