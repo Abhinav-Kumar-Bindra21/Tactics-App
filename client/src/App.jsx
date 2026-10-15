@@ -8,8 +8,11 @@ import AboutSection from "./components/AboutSection";
 import Footer from "./components/Footer";
 
 import puzzles from "./data/puzzles";
+import { Route, Routes } from "react-router-dom";
+import StudentDashboard from "./components/student/StudentDashboard";
+import AuthPage from "./components/AuthPage";
 
-function App() {
+function HomePage() {
   const [selectedTheme, setSelectedTheme] = useState("All");
   const [puzzleIndex, setPuzzleIndex] = useState(0);
 
@@ -150,6 +153,16 @@ function App() {
 
       <Footer />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="login" element={<AuthPage />} />
+      <Route path="/student/dashboard" element={<StudentDashboard />} />
+    </Routes>
   );
 }
 
