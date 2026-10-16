@@ -14,6 +14,7 @@ import AuthPage from "./components/AuthPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import CoachDashboard from "./components/coach/CoachDashboard";
 import AdminDashboard from "./components/admin/AdminDashboard";
+import UserManagement from "./components/admin/UserManagement";
 
 function HomePage() {
   const [selectedTheme, setSelectedTheme] = useState("All");
@@ -175,6 +176,8 @@ function App() {
 
       <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
+        <Route path="/admin/users" element={<UserManagement />} />
       </Route>
     </Routes>
   );

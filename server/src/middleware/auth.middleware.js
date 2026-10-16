@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
-export function authenticateToken(req, res, next) {
+export async function authenticateToken(req, res, next) {
   // Step 1: Read the JWT from the HttpOnly cookie
   const token = req.cookies?.accessToken;
 
@@ -35,13 +36,29 @@ export function authenticateToken(req, res, next) {
       });
     }
 
-    // Step 5: Attach the authenticated user's identity to the request
+    // Step 5: Find the user's current account in MongoDB
+    const user = await User.findById(decoded.sub).select("_id role isActive").lean();
+
+    if (!user) {
+      return res.status(401).json({
+        message: "User account not found.",
+      });
+    }
+
+    // Step 6: Reject inactive accounts
+    if (!user.isActive) {
+      return res.status(403).json({
+        message: "Your account has been deactivated.",
+      });
+    }
+
+    // Step 7: Use current database identity and role
     req.user = {
-      id: decoded.sub,
-      role: decoded.role,
+      id: user._id.toString(),
+      role: user.role,
     };
 
-    // Step 6: Allow the request to continue
+    // Step 8: Allow the request to continue
     return next();
   } catch (error) {
     if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError" || error.name === "NotBeforeError") {

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
 
 function AdminDashboard() {
@@ -12,19 +13,22 @@ function AdminDashboard() {
       title: "User Management",
       description: "View and manage student accounts.",
       icon: "👥",
-      status: "Coming next",
+      status: "Active",
+      path: "/admin/users",
     },
     {
       title: "Coach Management",
       description: "Manage coach accounts and access.",
       icon: "♟️",
       status: "Coming next",
+      path: null,
     },
     {
       title: "Puzzle Library",
       description: "Review and manage published puzzles.",
       icon: "🧩",
       status: "Coming later",
+      path: null,
     },
   ];
 
@@ -59,31 +63,55 @@ function AdminDashboard() {
         </section>
 
         <section className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {sections.map((section) => (
-            <article
-              key={section.title}
-              className="rounded-2xl border border-white/10 bg-white/5 p-6 transition hover:border-lime-400/40"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <span className="text-3xl" aria-hidden="true">
-                  {section.icon}
-                </span>
+          {sections.map((section) => {
+            const cardContent = (
+              <>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-3xl" aria-hidden="true">
+                    {section.icon}
+                  </span>
 
-                <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-gray-400">
-                  {section.status}
-                </span>
-              </div>
+                  <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-gray-400">
+                    {section.status}
+                  </span>
+                </div>
 
-              <h3 className="mt-5 text-xl font-bold">{section.title}</h3>
+                <h3 className="mt-5 text-xl font-bold">{section.title}</h3>
 
-              <p className="mt-2 text-sm leading-6 text-gray-400">{section.description}</p>
-            </article>
-          ))}
+                <p className="mt-2 text-sm leading-6 text-gray-400">{section.description}</p>
+
+                {section.path && <p className="mt-4 text-sm font-semibold text-lime-400">Manage users →</p>}
+              </>
+            );
+
+            const cardClassName =
+              "block rounded-2xl border border-white/10 bg-white/5 p-6 transition " +
+              (section.path
+                ? "cursor-pointer hover:border-lime-400/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-lime-400"
+                : "");
+
+            return section.path ? (
+              <Link
+                key={section.title}
+                to={section.path}
+                className={cardClassName}
+                aria-label={`Open ${section.title}`}
+              >
+                {cardContent}
+              </Link>
+            ) : (
+              <article key={section.title} className={cardClassName}>
+                {cardContent}
+              </article>
+            );
+          })}
         </section>
 
         <section className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-6">
           <p className="text-sm text-gray-400">Signed in as</p>
+
           <p className="mt-2 font-semibold">{user?.email}</p>
+
           <p className="mt-1 text-sm text-lime-400">Role: {user?.role}</p>
         </section>
       </main>

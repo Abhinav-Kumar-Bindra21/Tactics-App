@@ -101,11 +101,19 @@ export const loginStudent = async (req, res) => {
       email: email.trim().toLowerCase(),
     }).select("+password");
 
-    // Use a generic message for invalid credentials
-    if (!user || !user.isActive) {
+    // Check whether the account exists
+    if (!user) {
       return res.status(401).json({
         success: false,
         message: "Invalid email or password.",
+      });
+    }
+
+    // Check whether an admin has deactivated the account
+    if (!user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been deactivated. Please contact the administrator.",
       });
     }
 
