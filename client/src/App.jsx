@@ -15,6 +15,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import CoachDashboard from "./components/coach/CoachDashboard";
 import AdminDashboard from "./components/admin/AdminDashboard";
 import UserManagement from "./components/admin/UserManagement";
+import CoachManagement from "./components/admin/CoachManagement";
+import PuzzleLibrary from "./components/admin/PuzzleLibrary";
 
 function HomePage() {
   const [selectedTheme, setSelectedTheme] = useState("All");
@@ -178,6 +180,10 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
         <Route path="/admin/users" element={<UserManagement />} />
+
+        <Route path="/admin/coaches" element={<CoachManagement />} />
+
+        <Route path="/admin/puzzles" element={<PuzzleLibrary />} />
       </Route>
     </Routes>
   );

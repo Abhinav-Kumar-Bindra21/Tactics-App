@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import api from "../api/axios";
+import api, { setCsrfToken } from "../api/axios";
 
 const AuthContext = createContext(null);
 
@@ -8,13 +8,19 @@ export function AuthProvider({ children }) {
   const [authLoading, setAuthLoading] = useState(true);
 
   // Check whether a valid login session already exists.
+
   const refreshUser = useCallback(async () => {
     try {
       const response = await api.get("/auth/me");
       setUser(response.data.user);
+
+      const csrfResponse = await api.get("/auth/csrf");
+      setCsrfToken(csrfResponse.data.csrfToken);
+
       return response.data.user;
     } catch {
       setUser(null);
+      setCsrfToken(null);
       return null;
     }
   }, []);
