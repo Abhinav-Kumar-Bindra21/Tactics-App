@@ -7,6 +7,7 @@ import connectDb from "./config/db.js";
 import puzzleRouter from "./routes/puzzle.route.js";
 import userRouter from "./routes/auth.route.js";
 import adminRouter from "./routes/admin.route.js";
+import coachRouter from "./routes/coach.route.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -34,6 +35,7 @@ app.use(cookieParser());
 app.use("/api/puzzles", puzzleRouter);
 app.use("/api/auth", userRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/coach", coachRouter);
 
 const startServer = async () => {
   try {

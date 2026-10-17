@@ -43,6 +43,7 @@ export function AuthProvider({ children }) {
       await api.post("/auth/logout");
     } finally {
       setUser(null);
+      setCsrfToken(null);
     }
   }, []);
 

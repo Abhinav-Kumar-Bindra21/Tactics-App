@@ -34,6 +34,13 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
+    coachApprovalStatus: {
+      type: String,
+      enum: ["not_required", "pending", "approved", "rejected"],
+      default: "not_required",
+      required: true,
+    },
+
     isActive: {
       type: Boolean,
       default: true,

@@ -16,7 +16,7 @@ function AboutSection() {
       </p>
 
       <a
-        href="#tactics"
+        href="tactics"
         className="mt-7 inline-flex rounded-xl border border-lime-300/40 px-5 py-3 font-semibold text-lime-300 transition hover:bg-lime-300 hover:text-gray-950"
       >
         Explore tactics

@@ -2,10 +2,19 @@ import Attempt from "../models/Attempt.js";
 import Puzzle from "../models/Puzzle.js";
 import mongoose from "mongoose";
 import { validatePuzzleAttempt } from "../utils/validatePuzzleAttempt.js";
+import { Chess } from "chess.js";
+import { generatePuzzleId } from "../utils/generatePuzzleId.js";
 
 export const getPuzzles = async (req, res) => {
   try {
-    const puzzles = await Puzzle.find({ isPublished: true }).select("-solutions").sort({ createdAt: -1 }).lean();
+    const puzzles = await Puzzle.find({
+      isPublished: true,
+      status: "approved",
+      visibility: "library",
+    })
+      .select("-solutions")
+      .sort({ createdAt: -1 })
+      .lean();
 
     return res.status(200).json({
       count: puzzles.length,
@@ -25,6 +34,8 @@ export const getPuzzleById = async (req, res) => {
     const puzzle = await Puzzle.findOne({
       puzzleId: req.params.puzzleId,
       isPublished: true,
+      status: "approved",
+      visibility: "library",
     })
       .select("-solutions")
       .lean();
@@ -118,7 +129,7 @@ export const submitPuzzleAttempt = async (req, res) => {
 
 export const getMyAttempts = async (req, res) => {
   try {
-    const attempts = await Attemp.find({ studentId: req.user.id })
+    const attempts = await Attempt.find({ studentId: req.user.id })
       .populate("puzzleId", "puzzleId title theme difficulty")
       .select("-playedMoves")
       .sort({ createdAt: -1 })
@@ -414,6 +425,142 @@ export const getMyDashboard = async (req, res) => {
 
     return res.status(500).json({
       message: "Unable to fetch your dashboard.",
+    });
+  }
+};
+
+export const submitCoachPuzzle = async (req, res) => {
+  try {
+    const { title, fen, theme, difficulty, description, hint = "", solutions } = req.body ?? {};
+
+    // 1. Validate required text fields.
+    if (
+      typeof title !== "string" ||
+      !title.trim() ||
+      title.trim().length > 120 ||
+      typeof fen !== "string" ||
+      !fen.trim() ||
+      typeof description !== "string" ||
+      !description.trim() ||
+      description.trim().length > 1000 ||
+      typeof hint !== "string" ||
+      hint.trim().length > 500
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide valid title, FEN, description, and hint fields.",
+      });
+    }
+
+    // 2. Validate the tactical theme and difficulty.
+    const allowedThemes = ["Knight Forks", "Pins", "Skewers", "Checkmate", "Discovered Attacks", "Deflection"];
+
+    const allowedDifficulties = ["Beginner", "Intermediate", "Advanced"];
+
+    if (!allowedThemes.includes(theme) || !allowedDifficulties.includes(difficulty)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid puzzle theme or difficulty.",
+      });
+    }
+
+    // 3. Validate the starting chess position.
+    const cleanedFen = fen.trim();
+
+    try {
+      new Chess(cleanedFen);
+    } catch {
+      return res.status(400).json({
+        success: false,
+        message: "The supplied FEN is not a valid chess position.",
+      });
+    }
+
+    // 4. Validate the solution format.
+    if (
+      !Array.isArray(solutions) ||
+      solutions.length === 0 ||
+      solutions.length > 10 ||
+      !solutions.every(
+        (line) =>
+          Array.isArray(line) &&
+          line.length > 0 &&
+          line.length <= 20 &&
+          line.every((move) => typeof move === "string" && move.trim().length > 0 && move.trim().length <= 20),
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Provide valid solution lines containing chess moves.",
+      });
+    }
+
+    // 5. Generate an ID and create a pending coach submission.
+    const puzzleId = await generatePuzzleId();
+
+    const puzzle = await Puzzle.create({
+      puzzleId,
+      title: title.trim(),
+      fen: cleanedFen,
+      theme,
+      difficulty,
+      description: description.trim(),
+      hint: hint.trim(),
+      solutions: solutions.map((line) => line.map((move) => move.trim())),
+
+      // These fields are controlled by the backend.
+      source: "coach",
+      createdBy: req.user.id,
+      coachId: req.user.id,
+      status: "pending",
+      visibility: "coach_students",
+      isPublished: false,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Puzzle submitted successfully and is awaiting admin review.",
+      puzzle: {
+        puzzleId: puzzle.puzzleId,
+        title: puzzle.title,
+        theme: puzzle.theme,
+        difficulty: puzzle.difficulty,
+        status: puzzle.status,
+        visibility: puzzle.visibility,
+        isPublished: puzzle.isPublished,
+      },
+    });
+  } catch (error) {
+    console.error("Failed to submit coach puzzle:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to submit puzzle for review.",
+    });
+  }
+};
+
+export const getMyCoachSubmissions = async (req, res) => {
+  try {
+    const puzzles = await Puzzle.find({
+      source: "coach",
+      createdBy: req.user.id,
+    })
+      .select("-solutions")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      count: puzzles.length,
+      puzzles,
+    });
+  } catch (error) {
+    console.error("Failed to fetch coach submissions:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to fetch your puzzle submissions.",
     });
   }
 };

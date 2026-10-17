@@ -13,6 +13,7 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [signupRole, setSignupRole] = useState("student");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,20 +23,27 @@ function AuthPage() {
     setLoading(true);
 
     try {
-      // Get a CSRF token and cookie before authentication.
+      // Get a CSRF token and cookie before the request.
       await api.get("/auth/csrf");
 
       if (mode === "signup") {
-        await api.post("/auth/register", {
+        const registrationEndpoint = signupRole === "coach" ? "/coach/register" : "/auth/register";
+
+        const response = await api.post(registrationEndpoint, {
           name,
           email,
           password,
         });
 
-        toast.success("Account created successfully! Please log in.");
+        if (signupRole === "coach") {
+          toast.success(response.data.message || "Coach registration submitted. Please wait for admin approval.");
+        } else {
+          toast.success("Account created successfully! Please log in.");
+        }
 
         setMode("login");
         setPassword("");
+        setSignupRole("student");
         return;
       }
 
@@ -44,11 +52,22 @@ function AuthPage() {
         password,
       });
 
-      await refreshUser();
+      const currentUser = await refreshUser();
 
       toast.success("Login successful! Welcome to Tactic Lab.");
 
-      navigate("/student/dashboard", { replace: true });
+      // Route users according to their role and coach approval status.
+      if (currentUser?.role === "admin") {
+        navigate("/admin/dashboard", { replace: true });
+      } else if (currentUser?.role === "coach") {
+        if (currentUser.coachApprovalStatus === "approved") {
+          navigate("/coach/dashboard", { replace: true });
+        } else {
+          navigate("/coach/pending-approval", { replace: true });
+        }
+      } else {
+        navigate("/student/dashboard", { replace: true });
+      }
     } catch (error) {
       const message = error.response?.data?.message || "Something went wrong. Please try again.";
 
@@ -63,6 +82,7 @@ function AuthPage() {
 
     setMode(nextMode);
     setPassword("");
+    setSignupRole("student");
   }
 
   return (
@@ -100,21 +120,46 @@ function AuthPage() {
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           {mode === "signup" && (
-            <div>
-              <label htmlFor="name" className="mb-1 block text-sm font-medium">
-                Full Name
-              </label>
+            <>
+              <div>
+                <label htmlFor="name" className="mb-1 block text-sm font-medium">
+                  Full Name
+                </label>
 
-              <input
-                type="text"
-                id="name"
-                autoComplete="name"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-gray-900 px-4 py-3 outline-none focus:border-lime-400"
-              />
-            </div>
+                <input
+                  type="text"
+                  id="name"
+                  autoComplete="name"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full rounded-lg border border-white/10 bg-gray-900 px-4 py-3 outline-none focus:border-lime-400"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="signupRole" className="mb-1 block text-sm font-medium">
+                  Register as
+                </label>
+
+                <select
+                  id="signupRole"
+                  value={signupRole}
+                  onChange={(e) => setSignupRole(e.target.value)}
+                  disabled={loading}
+                  className="w-full rounded-lg border border-white/10 bg-gray-900 px-4 py-3 text-white outline-none focus:border-lime-400"
+                >
+                  <option value="student">Student</option>
+                  <option value="coach">Coach — requires admin approval</option>
+                </select>
+
+                {signupRole === "coach" && (
+                  <p className="mt-2 text-sm text-amber-300">
+                    Your coach account will remain pending until an administrator approves it.
+                  </p>
+                )}
+              </div>
+            </>
           )}
 
           <div>

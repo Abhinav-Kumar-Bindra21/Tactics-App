@@ -21,7 +21,7 @@ const Hero = () => {
         </p>
 
         <a
-          href="#tactics"
+          href="tactics"
           className="mt-8 inline-flex items-center gap-3 rounded-xl bg-lime-300 px-6 py-3.5 font-bold text-gray-950 transition hover:bg-lime-200"
         >
           Explore tactics <span aria-hidden="true">→</span>

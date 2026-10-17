@@ -6,7 +6,7 @@ const Navbar = () => {
       </a>
 
       <nav className="hidden items-center gap-8 text-sm text-gray-300 md:flex">
-        <a href="#tactics" className="transition hover:text-lime-300">
+        <a href="tactics" className="transition hover:text-lime-300">
           Tactics
         </a>
 
@@ -20,7 +20,7 @@ const Navbar = () => {
       </nav>
 
       <a
-        href="#tactics"
+        href="tactics"
         className="rounded-xl bg-lime-300 px-4 py-2.5 text-sm font-bold text-gray-950 transition hover:bg-lime-200"
       >
         Start Training →

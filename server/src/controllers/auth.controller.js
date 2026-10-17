@@ -150,6 +150,7 @@ export const loginStudent = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        coachApprovalStatus: user.coachApprovalStatus,
       },
     });
   } catch (error) {
@@ -193,7 +194,7 @@ export function getCsrfToken(req, res) {
 
 export const getCurrentUser = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("_id name email role isActive");
+    const user = await User.findById(req.user.id).select("_id name email role isActive coachApprovalStatus");
 
     if (!user || !user.isActive) {
       res.clearCookie("accessToken");
@@ -202,7 +203,16 @@ export const getCurrentUser = async (req, res) => {
 
     return res
       .status(200)
-      .json({ success: true, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+      .json({
+        success: true,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          coachApprovalStatus: user.coachApprovalStatus,
+        },
+      });
   } catch (error) {
     console.error("Get current user failed:", error.message);
 

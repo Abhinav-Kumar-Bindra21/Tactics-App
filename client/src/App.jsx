@@ -17,6 +17,7 @@ import AdminDashboard from "./components/admin/AdminDashboard";
 import UserManagement from "./components/admin/UserManagement";
 import CoachManagement from "./components/admin/CoachManagement";
 import PuzzleLibrary from "./components/admin/PuzzleLibrary";
+import CoachPendingApproval from "./components/coach/CoachPendingApproval";
 
 function HomePage() {
   const [selectedTheme, setSelectedTheme] = useState("All");
@@ -165,17 +166,26 @@ function HomePage() {
 function App() {
   return (
     <Routes>
+      {/* Public routes */}
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<AuthPage />} />
 
+      {/* Student routes */}
       <Route element={<ProtectedRoute allowedRoles={["student"]} />}>
         <Route path="/student/dashboard" element={<StudentDashboard />} />
       </Route>
 
-      <Route element={<ProtectedRoute allowedRoles={["coach"]} />}>
+      {/* Approved coach dashboard */}
+      <Route element={<ProtectedRoute allowedRoles={["coach"]} requireApprovedCoach />}>
         <Route path="/coach/dashboard" element={<CoachDashboard />} />
       </Route>
 
+      {/* Pending or rejected coach application */}
+      <Route element={<ProtectedRoute allowedRoles={["coach"]} />}>
+        <Route path="/coach/pending-approval" element={<CoachPendingApproval />} />
+      </Route>
+
+      {/* Admin routes */}
       <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
 

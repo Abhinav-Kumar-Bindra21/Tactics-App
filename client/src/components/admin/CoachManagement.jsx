@@ -10,21 +10,21 @@ function CoachManagement() {
   const [updatingCoachId, setUpdatingCoachId] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
 
-  useEffect(() => {
-    async function loadCoaches() {
-      try {
-        setLoading(true);
-        setError("");
+  async function loadCoaches() {
+    try {
+      setLoading(true);
+      setError("");
 
-        const response = await api.get("/admin/coaches");
-        setCoaches(response.data.coaches);
-      } catch (err) {
-        setError(err.response?.data?.message || "Unable to load coaches.");
-      } finally {
-        setLoading(false);
-      }
+      const response = await api.get("/admin/coaches");
+      setCoaches(response.data.coaches);
+    } catch (err) {
+      setError(err.response?.data?.message || "Unable to load coaches.");
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     loadCoaches();
   }, []);
 
@@ -60,6 +60,55 @@ function CoachManagement() {
     }
   }
 
+  async function handleReviewApplication(coach, decision) {
+    const action = decision === "approve" ? "approve" : "reject";
+
+    const confirmed = window.confirm(`Are you sure you want to ${action} ${coach.name}'s coach application?`);
+
+    if (!confirmed) return;
+
+    try {
+      setUpdatingCoachId(coach._id);
+      setError("");
+      setSuccessMessage("");
+
+      const response = await api.patch(`/admin/coaches/${coach._id}/review`, { decision });
+
+      setCoaches((currentCoaches) =>
+        currentCoaches.map((item) =>
+          item._id === coach._id
+            ? {
+                ...item,
+                coachApprovalStatus: response.data.coach.coachApprovalStatus,
+              }
+            : item,
+        ),
+      );
+
+      setSuccessMessage(response.data.message);
+    } catch (err) {
+      setError(err.response?.data?.message || "Unable to review coach application.");
+    } finally {
+      setUpdatingCoachId(null);
+    }
+  }
+
+  function approvalStatusClass(status) {
+    if (status === "approved") {
+      return "bg-lime-400/10 text-lime-300";
+    }
+
+    if (status === "rejected") {
+      return "bg-red-400/10 text-red-300";
+    }
+
+    if (status === "pending") {
+      return "bg-yellow-400/10 text-yellow-300";
+    }
+
+    return "bg-white/10 text-gray-300";
+  }
+
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <header className="border-b border-white/10 bg-gray-900/70">
@@ -78,7 +127,7 @@ function CoachManagement() {
       <main className="mx-auto max-w-7xl px-5 py-10 md:px-10">
         <div>
           <h2 className="text-3xl font-extrabold">Manage Coaches</h2>
-          <p className="mt-2 text-gray-400">View coach accounts and manage their access to Tactic Lab.</p>
+          <p className="mt-2 text-gray-400">Review coach applications and manage access to Tactic Lab.</p>
         </div>
 
         <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-5">
@@ -97,6 +146,8 @@ function CoachManagement() {
 
           <div className="mt-5 flex flex-wrap gap-3 text-sm text-gray-400">
             <span>Total coaches: {coaches.length}</span>
+            <span>Pending: {coaches.filter((coach) => coach.coachApprovalStatus === "pending").length}</span>
+            <span>Approved: {coaches.filter((coach) => coach.coachApprovalStatus === "approved").length}</span>
             <span>Active: {coaches.filter((coach) => coach.isActive).length}</span>
             <span>Inactive: {coaches.filter((coach) => !coach.isActive).length}</span>
           </div>
@@ -121,16 +172,17 @@ function CoachManagement() {
             <p className="font-semibold">
               {coaches.length === 0 ? "No coach accounts found." : "No coaches match your search."}
             </p>
-            <p className="mt-2 text-sm text-gray-400">Coaches with the coach role will appear here.</p>
+            <p className="mt-2 text-sm text-gray-400">Registered coaches will appear here.</p>
           </div>
         ) : (
           <div className="mt-6 overflow-x-auto rounded-2xl border border-white/10">
-            <table className="w-full min-w-[750px] text-left text-sm">
+            <table className="w-full min-w-[900px] text-left text-sm">
               <thead className="bg-white/5 text-gray-400">
                 <tr>
                   <th className="px-5 py-4">Name</th>
                   <th className="px-5 py-4">Email</th>
-                  <th className="px-5 py-4">Status</th>
+                  <th className="px-5 py-4">Application</th>
+                  <th className="px-5 py-4">Account</th>
                   <th className="px-5 py-4">Registered</th>
                   <th className="px-5 py-4">Action</th>
                 </tr>
@@ -141,6 +193,13 @@ function CoachManagement() {
                   <tr key={coach._id}>
                     <td className="px-5 py-4 font-medium">{coach.name}</td>
                     <td className="px-5 py-4 text-gray-300">{coach.email}</td>
+
+                    <td className="px-5 py-4">
+                      <span className={`rounded-full px-3 py-1 ${approvalStatusClass(coach.coachApprovalStatus)}`}>
+                        {coach.coachApprovalStatus || "Unknown"}
+                      </span>
+                    </td>
+
                     <td className="px-5 py-4">
                       <span
                         className={
@@ -152,18 +211,44 @@ function CoachManagement() {
                         {coach.isActive ? "Active" : "Inactive"}
                       </span>
                     </td>
+
                     <td className="px-5 py-4 text-gray-400">
                       {coach.createdAt ? new Date(coach.createdAt).toLocaleDateString() : "—"}
                     </td>
+
                     <td className="px-5 py-4">
-                      <button
-                        type="button"
-                        disabled={updatingCoachId === coach._id}
-                        onClick={() => handleToggleStatus(coach)}
-                        className="rounded-lg border border-white/15 px-3 py-2 font-semibold transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        {updatingCoachId === coach._id ? "Updating..." : coach.isActive ? "Deactivate" : "Activate"}
-                      </button>
+                      <div className="flex flex-wrap gap-2">
+                        {coach.coachApprovalStatus === "pending" && (
+                          <>
+                            <button
+                              type="button"
+                              disabled={updatingCoachId === coach._id}
+                              onClick={() => handleReviewApplication(coach, "approve")}
+                              className="rounded-lg bg-lime-400 px-3 py-2 font-semibold text-gray-950 hover:bg-lime-300 disabled:opacity-50"
+                            >
+                              Approve
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={updatingCoachId === coach._id}
+                              onClick={() => handleReviewApplication(coach, "reject")}
+                              className="rounded-lg border border-red-400/40 px-3 py-2 font-semibold text-red-300 hover:bg-red-400/10 disabled:opacity-50"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+
+                        <button
+                          type="button"
+                          disabled={updatingCoachId === coach._id}
+                          onClick={() => handleToggleStatus(coach)}
+                          className="rounded-lg border border-white/15 px-3 py-2 font-semibold transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {updatingCoachId === coach._id ? "Updating..." : coach.isActive ? "Deactivate" : "Activate"}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

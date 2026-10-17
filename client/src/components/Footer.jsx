@@ -7,7 +7,7 @@ function Footer() {
 
       <p className="text-sm text-gray-500">Built to make every move count.</p>
 
-      <a href="#tactics" className="text-sm font-semibold text-lime-300 hover:text-lime-200">
+      <a href="tactics" className="text-sm font-semibold text-lime-300 hover:text-lime-200">
         Explore tactics ↑
       </a>
     </footer>
