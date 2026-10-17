@@ -25,7 +25,7 @@ puzzleRouter.get("/my-theme-progress", authenticateToken, getMyThemeProgress);
 puzzleRouter.get("/my-recommendation", authenticateToken, getMyRecommendation);
 puzzleRouter.get("/my-repeated-mistakes", authenticateToken, getMyRepeatedMistakes);
 puzzleRouter.get("/my-dashboard", authenticateToken, getMyDashboard);
-puzzleRouter.get("/:puzzleId", getPuzzleById);
+
 puzzleRouter.post("/:puzzleId/attempts", requireTrustedOrigin, authenticateToken, verifyCsrf, submitPuzzleAttempt);
 
 puzzleRouter.post(
@@ -38,5 +38,7 @@ puzzleRouter.post(
 );
 
 puzzleRouter.get("/my-coach-submissions", authenticateToken, requireRole("coach"), getMyCoachSubmissions);
+
+puzzleRouter.get("/:puzzleId", getPuzzleById);
 
 export default puzzleRouter;

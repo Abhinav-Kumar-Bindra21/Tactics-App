@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useAuth } from "../../context/authContext";
 import { useNavigate } from "react-router-dom";
-import CoachPuzzleSubmission from "./CoachPuzzleSubmission";
-import MySubmissions from "./MySubmission";
+import CoachPuzzleSubmission from "../../components/coach/CoachPuzzleSubmission";
+import MySubmissions from "../../components/coach/MySubmission";
+import AddStudent from "../../components/coach/AddStudent";
+import MyStudents from "../../components/coach/MyStudents";
 
 function CoachDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
   const [activeView, setActiveView] = useState("dashboard");
 
   async function handleLogout() {
@@ -29,9 +30,7 @@ function CoachDashboard() {
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-sm font-bold tracking-widest text-lime-300">TACTIC LAB</p>
-
             <h1 className="mt-2 text-3xl font-extrabold">Coach Dashboard</h1>
-
             <p className="mt-2 text-gray-400">Welcome, {user?.name || "Coach"}.</p>
           </div>
 
@@ -62,9 +61,7 @@ function CoachDashboard() {
               className="rounded-2xl border border-white/10 bg-white/5 p-6 text-left transition hover:border-lime-300/50 hover:bg-white/10"
             >
               <h2 className="text-xl font-bold">Puzzle Library</h2>
-
               <p className="mt-2 text-gray-400">Submit tactical puzzles for admin review.</p>
-
               <span className="mt-4 inline-block text-sm font-semibold text-lime-300">Submit a puzzle →</span>
             </button>
 
@@ -74,25 +71,33 @@ function CoachDashboard() {
               className="rounded-2xl border border-white/10 bg-white/5 p-6 text-left transition hover:border-lime-300/50 hover:bg-white/10"
             >
               <h2 className="text-xl font-bold">My Submissions</h2>
-
               <p className="mt-2 text-gray-400">Track pending, approved, and rejected puzzles.</p>
-
               <span className="mt-4 inline-block text-sm font-semibold text-lime-300">View submissions →</span>
             </button>
 
-            <article className="rounded-2xl border border-white/10 bg-white/5 p-6">
-              <h2 className="text-xl font-bold">My Students</h2>
+            <button
+              type="button"
+              onClick={() => setActiveView("addStudent")}
+              className="rounded-2xl border border-white/10 bg-white/5 p-6 text-left transition hover:border-lime-300/50 hover:bg-white/10"
+            >
+              <h2 className="text-xl font-bold">Add Student</h2>
+              <p className="mt-2 text-gray-400">Register a student under your coaching account.</p>
+              <span className="mt-4 inline-block text-sm font-semibold text-lime-300">Register a student →</span>
+            </button>
 
-              <p className="mt-2 text-gray-400">Manage students and review their training progress.</p>
-
-              <p className="mt-4 text-xs text-gray-500">Student assignment will be connected in a later step.</p>
-            </article>
+            <button
+              type="button"
+              onClick={() => setActiveView("students")}
+              className="rounded-2xl border border-white/10 bg-white/5 p-6 text-left transition hover:border-lime-300/50 hover:bg-white/10"
+            >
+              <h2 className="text-xl font-bold">Get Students</h2>
+              <p className="mt-2 text-gray-400">View students connected to your coaching account.</p>
+              <span className="mt-4 inline-block text-sm font-semibold text-lime-300">View students →</span>
+            </button>
 
             <article className="rounded-2xl border border-white/10 bg-white/5 p-6">
               <h2 className="text-xl font-bold">Performance</h2>
-
               <p className="mt-2 text-gray-400">Identify tactical weaknesses and track student improvement.</p>
-
               <p className="mt-4 text-xs text-gray-500">Performance tracking will be connected later.</p>
             </article>
           </section>
@@ -107,6 +112,18 @@ function CoachDashboard() {
         {activeView === "submissions" && (
           <section className="mt-8">
             <MySubmissions />
+          </section>
+        )}
+
+        {activeView === "addStudent" && (
+          <section className="mt-8">
+            <AddStudent />
+          </section>
+        )}
+
+        {activeView === "students" && (
+          <section className="mt-8">
+            <MyStudents />
           </section>
         )}
       </div>
